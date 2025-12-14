@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>士業・専門家のためのAI業務設計 × AIエージェント構築</title>
+  <meta name="description" content="士業・専門家の業務をAIに翻訳・設計。ChatGPT・n8n・診断AIで実務をそのままAI化します。まずは相談フォームへ。" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro', 'Meiryo', 'メイリオ', sans-serif;
+      line-height: 1.8;
+      color: #1e293b;
+      background: #f8fafc;
+    }
+    .container { max-width: 1000px; margin: 0 auto; background: white; }
+
+    /* ===== 固定ヘッダー（追従） ===== */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .topbar-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand {
+      font-weight: 800;
+      color: #1e293b;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .mini-link {
+      font-size: 13px;
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 700;
+      padding: 8px 10px;
+      border-radius: 8px;
+    }
+    .mini-link:hover { background: #eff6ff; }
+
+    .mini-cta {
+      display: inline-block;
+      background: #2563eb;
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      box-shadow: 0 6px 16px rgba(37,99,235,0.18);
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      white-space: nowrap;
+    }
+    .mini-cta:hover {
+      transform: translateY(-1px);
+      background: #1d4ed8;
+      box-shadow: 0 10px 22px rgba(37,99,235,0.22);
+    }
+
+    /* ===== ヘッダー（ファーストビュー） ===== */
+    .header {
+      background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+      color: white;
+      padding: 80px 40px;
+      text-align: center;
+    }
+    .header h1 { font-size: 36px; font-weight: bold; margin-bottom: 20px; line-height: 1.4; }
+    .header h2 { font-size: 22px; font-weight: 600; margin-bottom: 30px; opacity: 0.95; }
+    .header-text { font-size: 16px; line-height: 1.8; margin-bottom: 15px; opacity: 0.9; }
+    .header-note { font-size: 14px; opacity: 0.8; margin-top: 20px; }
+
+    .cta-button {
+      display: inline-block;
+      background: white;
+      color: #2563eb;
+      padding: 15px 40px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 16px;
+      margin-top: 30px;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+
+    /* セクション共通 */
+    .section { padding: 60px 40px; }
+    .section-alt { background: #f8fafc; }
+    .section-title { font-size: 28px; font-weight: bold; color: #1e293b; margin-bottom: 30px; text-align: center; }
+    .section-subtitle { font-size: 20px; font-weight: bold; color: #2563eb; margin-bottom: 15px; margin-top: 30px; }
+
+    /* 共感ブロック */
+    .pain-points { background: #eff6ff; border-left: 4px solid #2563eb; padding: 30px; border-radius: 8px; margin-bottom: 30px; }
+    .pain-points ul { list-style: none; padding: 0; }
+    .pain-points li { padding: 12px 0; font-size: 16px; color: #475569; }
+    .pain-points li:before { content: "✓ "; color: #2563eb; font-weight: bold; margin-right: 10px; }
+
+    /* 立ち位置ブロック */
+    .position-block { background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); padding: 40px; border-radius: 12px; text-align: center; margin: 30px 0; }
+    .position-block p { font-size: 18px; line-height: 1.8; color: #1e293b; margin-bottom: 15px; }
+
+    /* 実績グリッド */
+    .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 40px; }
+    .achievement-card { background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 30px 20px; transition: all 0.3s; }
+    .achievement-card:hover { border-color: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1); }
+    .achievement-icon { font-size: 40px; margin-bottom: 15px; }
+    .achievement-card h3 { font-size: 18px; color: #2563eb; margin-bottom: 20px; font-weight: bold; }
+    .achievement-card h4 { font-size: 16px; color: #1e293b; margin: 15px 0 10px; font-weight: bold; }
+    .achievement-card p { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 8px; }
+    .achievement-note { font-size: 13px; color: #64748b; font-style: italic; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; }
+
+    /* サービスメニュー */
+    .service-list { margin-top: 30px; }
+    .service-item { background: white; border: 2px solid #e2e8f0; border-radius: 12px; padding: 30px; margin-bottom: 20px; transition: all 0.3s; }
+    .service-item:hover { border-color: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1); }
+    .service-item h3 { font-size: 20px; color: #2563eb; margin-bottom: 15px; }
+    .service-item h4 { font-size: 16px; color: #1e293b; margin: 15px 0 10px; font-weight: bold; }
+    .service-item ul { list-style: none; padding: 0; margin: 10px 0; }
+    .service-item li { padding: 8px 0; padding-left: 20px; position: relative; color: #475569; }
+    .service-item li:before { content: "・"; position: absolute; left: 0; color: #2563eb; font-weight: bold; }
+
+    /* 安心設計ボックス */
+    .safety-box { background: #eff6ff; border: 2px solid #bfdbfe; border-radius: 12px; padding: 30px; margin: 30px 0; }
+    .safety-box h3 { font-size: 20px; color: #1e40af; margin-bottom: 20px; display: flex; align-items: center; }
+    .safety-box h3:before { content: "🔑 "; margin-right: 10px; }
+    .safety-box ul { list-style: none; padding: 0; }
+    .safety-box li { padding: 10px 0; padding-left: 25px; position: relative; color: #1e40af; font-weight: 500; }
+    .safety-box li:before { content: "・"; position: absolute; left: 0; font-weight: bold; }
+
+    /* 価格ブロック */
+    .pricing-flow { background: #f8fafc; border-radius: 12px; padding: 30px; margin: 30px 0; }
+    .pricing-step { padding: 20px 0; border-bottom: 1px solid #e2e8f0; }
+    .pricing-step:last-child { border-bottom: none; }
+    .pricing-step strong { color: #2563eb; font-size: 18px; }
+    .pricing-note { font-size: 13px; color: #64748b; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+
+    /* 統合メッセージ */
+    .message-block { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; padding: 60px 40px; text-align: center; }
+    .message-block h2 { font-size: 28px; margin-bottom: 30px; }
+    .message-block p { font-size: 20px; line-height: 1.8; margin-bottom: 15px; }
+
+    /* 最終CTA */
+    .final-cta { background: white; padding: 80px 40px; text-align: center; }
+    .final-cta h2 { font-size: 28px; color: #1e293b; margin-bottom: 20px; line-height: 1.6; }
+    .final-cta p { color: #475569; margin-bottom: 22px; }
+    .final-cta .cta-button { background: #2563eb; color: white; font-size: 18px; padding: 20px 50px; }
+    .final-cta .cta-button:hover { background: #1d4ed8; }
+
+    /* フッター */
+    .footer { background: #1e293b; color: white; padding: 40px; text-align: center; }
+    .footer p { margin: 8px 0; opacity: 0.9; }
+
+    /* 小さな注意 */
+    .fineprint {
+      max-width: 760px;
+      margin: 0 auto;
+      font-size: 12px;
+      color: #64748b;
+      text-align: left;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 16px 18px;
+      line-height: 1.7;
+    }
+    .fineprint strong { color: #1e293b; }
+
+    /* レスポンシブ */
+    @media (max-width: 768px) {
+      .header { padding: 64px 20px; }
+      .header h1 { font-size: 26px; }
+      .header h2 { font-size: 17px; }
+      .achievements-grid { grid-template-columns: 1fr; }
+      .section { padding: 40px 20px; }
+      .message-block { padding: 40px 20px; }
+      .final-cta { padding: 60px 20px; }
+      .brand { display: none; }
+    }
+  </style>
+
+  <script>
+    // ★ここだけ変えればOK（フォームURL）
+    const GOOGLE_FORM_URL = "https://forms.gle/k1Es1sWwD43b61G16";
+
+    function goForm() {
+      // 新規タブで開く（LPから離脱し過ぎない）
+      window.open(GOOGLE_FORM_URL, "_blank", "noopener,noreferrer");
+    }
+
+    function smoothTo(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  </script>
+</head>
+
+<body>
+  <!-- 追従ヘッダー -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">AI業務設計 × AIエージェント構築（士業・専門家向け）</div>
+      <div class="top-actions">
+        <a class="mini-link" href="#services">支援内容</a>
+        <a class="mini-link" href="#pricing">価格</a>
+        <a class="mini-cta" href="javascript:void(0)" onclick="goForm()">相談フォームへ</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- ヘッダー / ファーストビュー -->
+    <div class="header">
+      <h1>士業・専門家のための<br>AI業務設計 × AIエージェント構築</h1>
+      <h2>ChatGPT・n8n・診断AIで<br>あなたの実務をそのままAI化します</h2>
+
+      <p class="header-text">
+        AIを触ってみたけれど、<br>
+        「業務にどう落とせばいいか分からない」<br>
+        そんな士業・専門家のための実装支援です。
+      </p>
+      <p class="header-text">
+        私は、AIツールを作る人ではなく、<br>
+        士業の業務をAIに翻訳・設計する人です。
+      </p>
+
+      <p class="header-note">
+        ※ 社労士・行政書士・FP・コンサル・研修講師など<br>
+        専門職の業務に特化しています
+      </p>
+
+      <!-- ★フォームへ直行 -->
+      <a href="javascript:void(0)" class="cta-button" onclick="goForm()">まずは相談する（フォーム）</a>
+    </div>
+
+    <!-- Section 2: 対象者の明確化 -->
+    <div class="section">
+      <h2 class="section-title">こんなお悩みはありませんか？</h2>
+      <div class="pain-points">
+        <ul>
+          <li>AIを業務に使いたいが、設計で止まっている</li>
+          <li>ChatGPTを触ったが、仕事にならない</li>
+          <li>診断ツールを作りたいが判断基準が整理できない</li>
+          <li>n8nに挑戦して挫折した</li>
+          <li>クライアントからAI活用を聞かれるようになった</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Section 3: 立ち位置 -->
+    <div class="section section-alt">
+      <h2 class="section-title">私の役割について</h2>
+      <div class="position-block">
+        <p>私は「AIツールを作る人」ではありません。<br>
+          士業・専門家の業務をAIに翻訳し、設計する人です。</p>
+        <p>ツール操作ではなく、<br>
+          実務・責任・説明を前提にしたAI設計を行います。</p>
+      </div>
+    </div>
+
+    <!-- Section 4: 実装実績 -->
+    <div class="section">
+      <h2 class="section-title">実装実績（一部）</h2>
+
+      <div class="achievements-grid">
+        <!-- カード1 -->
+        <div class="achievement-card">
+          <div class="achievement-icon">📋</div>
+          <h3>診断AI・判定システム</h3>
+          <p>専門家の判断を支援する診断AI・判定システムの実装実績</p>
+
+          <h4>CQパーソナリティ診断</h4>
+          <p>→ 面談・人材配置・コミュニケーション支援をAI化</p>
+
+          <h4>外国人雇用 在留資格診断システム</h4>
+          <p>→ 学歴・職務内容から在留資格を自動判定</p>
+
+          <h4>職務分析Bot v2.0</h4>
+          <p>→ 職務内容を入力すると、AIが整理・可視化</p>
+
+          <p class="achievement-note">「ヒアリング → 判断 → 説明」この流れをAIで再現しています。</p>
+        </div>
+
+        <!-- カード2 -->
+        <div class="achievement-card">
+          <div class="achievement-icon">💼</div>
+          <h3>業務シミュレーター</h3>
+          <p>"もしも"を事前に検証する業務シミュレーションAI</p>
+
+          <h4>事業承継DDシミュレーター</h4>
+          <p>→ 労務・リスク観点をAIと対戦形式で可視化</p>
+
+          <h4>介護職員等処遇改善システム</h4>
+          <p>→ 複雑な制度設計をUI＋AIで整理</p>
+
+          <p class="achievement-note">「判断が重い業務ほど、AIは"補助輪"として力を発揮します。」</p>
+        </div>
+
+        <!-- カード3 -->
+        <div class="achievement-card">
+          <div class="achievement-icon">⚡</div>
+          <h3>AIエージェント・業務自動化</h3>
+          <p>士業業務を"自動で回す"AIエージェント構築</p>
+
+          <h4>n8n × ChatGPT × Slack</h4>
+          <p>URL要約Bot</p>
+
+          <h4>AIエージェント構築</h4>
+          <p>4ステップ解説</p>
+
+          <h4>業務フロー前提の設計</h4>
+          <p>自動化設計</p>
+
+          <p class="achievement-note">ツールありきではなく、「業務ありき」でAIを組み立てています。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5: 支援内容 -->
+    <div class="section section-alt" id="services">
+      <h2 class="section-title">ご提供できる支援内容</h2>
+
+      <div class="service-list">
+        <div class="service-item">
+          <h3>① 士業向けAI活用・業務設計相談（単発）</h3>
+          <h4>内容</h4>
+          <p>現在の業務内容をヒアリングし、「どこにAIが使えるか」「何が作れるか」を整理します。</p>
+          <ul>
+            <li>ChatGPT・n8n・診断AIなどを前提に</li>
+            <li>業務目線で"使える形"に落とします</li>
+            <li>ツール操作指導ではなく、業務設計が中心</li>
+          </ul>
+          <h4>こんな方におすすめ</h4>
+          <ul>
+            <li>AIを触ってみたが、業務に落とせない</li>
+            <li>何から手を付けていいか分からない</li>
+            <li>クライアント向けにAI活用を考えたい</li>
+          </ul>
+        </div>
+
+        <div class="service-item">
+          <h3>② 診断AI・業務Botの設計・受託開発</h3>
+          <h4>内容</h4>
+          <p>士業業務に特化した診断AI・業務支援Botを設計・実装します。</p>
+          <p><strong>例：</strong></p>
+          <ul>
+            <li>ヒアリング内容をもとにした診断AI</li>
+            <li>判断基準を整理した判定・分岐システム</li>
+            <li>業務整理・説明補助Bot</li>
+          </ul>
+          <h4>特徴</h4>
+          <ul>
+            <li>業務フローを前提に設計</li>
+            <li>「説明責任」を意識した構成</li>
+            <li>実務で"使われる"ことを重視</li>
+          </ul>
+        </div>
+
+        <div class="service-item">
+          <h3>③ 既存業務のAI設計レビュー・改善提案</h3>
+          <h4>内容</h4>
+          <p>すでに使っているChatGPT／n8n／AIツールを見直し、「実務として安全か・続くか」をチェックします。</p>
+          <ul>
+            <li>設計の妥当性</li>
+            <li>属人化・リスクの有無</li>
+            <li>クライアント利用時の注意点</li>
+          </ul>
+          <p>👉 作り直しではなく"整える"支援</p>
+        </div>
+
+        <div class="service-item">
+          <h3>④ OEM・共同開発（士業・専門家向け）</h3>
+          <h4>内容</h4>
+          <p>診断AI・業務支援ツールをご自身のサービスとして提供したい方向けの支援です。</p>
+          <ul>
+            <li>名称・見せ方の整理</li>
+            <li>業務設計の再構築</li>
+            <li>OEM／共同開発の相談</li>
+          </ul>
+          <h4>対象</h4>
+          <p>社労士、行政書士、FP、コンサル・研修講師 など</p>
+        </div>
+
+        <div class="service-item">
+          <h3>⑤ n8n・AIエージェント構築サポート</h3>
+          <h4>内容</h4>
+          <p>業務自動化・AIエージェント構築を実務前提で支援します。</p>
+          <ul>
+            <li>「自動化できるかどうか」の見極め</li>
+            <li>フロー設計の考え方</li>
+            <li>実装サポート・レビュー</li>
+          </ul>
+          <p>※「ツールの操作説明」ではなく業務設計が中心です。</p>
+        </div>
+      </div>
+
+      <div class="safety-box">
+        <h3>安心設計</h3>
+        <ul>
+          <li>AIは「判断を代替」しません</li>
+          <li>専門家の判断を支援する設計を重視します</li>
+          <li>実務・責任を踏まえた範囲で構築します</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Section 6: 価格帯と進め方 -->
+    <div class="section" id="pricing">
+      <h2 class="section-title">価格帯と進め方</h2>
+      <div class="pricing-flow">
+        <div class="pricing-step">
+          <strong>1. AI業務設計相談（¥10,000〜¥30,000）</strong>
+          <p>現在の業務でAIがどう使えるかを整理</p>
+        </div>
+        <div class="pricing-step">
+          <strong>2. AI業務設計（¥50,000〜¥150,000）</strong>
+          <p>具体的な設計・仕様作成</p>
+        </div>
+        <div class="pricing-step">
+          <strong>3. 実装／OEM／講座（内容に応じて）</strong>
+          <p>ご要望に応じた形で対応</p>
+        </div>
+        <p class="pricing-note">
+          ※ 無理な提案は行いません<br>
+          ※ AIは判断を代替しません<br>
+          ※ 最適な形をご提案します
+        </p>
+      </div>
+    </div>
+
+    <!-- Section 7: 統合メッセージ -->
+    <div class="message-block">
+      <h2>大切にしていること</h2>
+      <p>私は、AIを売る人ではありません。</p>
+      <p>士業・専門家の業務を、<br>安全に・現実的にAI化する伴走者です。</p>
+    </div>
+
+    <!-- Section 8: 最終CTA -->
+    <div class="final-cta" id="contact">
+      <h2>まずは、あなたの業務で<br>AIが使えるか整理してみませんか？</h2>
+      <p>所要時間は約2分。送信後、自動返信メールが届きます。</p>
+
+      <div class="fineprint">
+        <strong>ご確認事項</strong><br>
+        ・本フォームは「業務設計の整理」を目的としています。<br>
+        ・AIは専門家の判断を代替せず、判断や責任は最終的にご本人に帰属します。<br>
+        ・無理な提案・不要な開発の押し売りは行いません。
+      </div>
+
+      <a href="javascript:void(0)" class="cta-button" onclick="goForm()">相談フォームへ進む</a>
+    </div>
+
+    <!-- フッター -->
+    <div class="footer">
+      <p>© <span id="y"></span> 新井健司</p>
+     <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+      <p>社会保険労務士・行政書士・AI業務設計支援</p>
+    </div>
+
+  </div>
+</body>
+</html>
